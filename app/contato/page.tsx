@@ -27,11 +27,13 @@ const LABEL_ORCAMENTO: Record<(typeof ORCAMENTOS)[number], string> = {
 const schema = z.object({
   nome: z.string().min(2, { message: "Informe seu nome" }).trim(),
   email: z.string().email({ message: "E-mail inválido" }).toLowerCase(),
+
+  // chave presente, aceita undefined
   whatsapp: z
-    .string()
-    .optional()
+    .union([z.string(), z.undefined()])
     .transform((v) => (v ?? "").trim())
     .transform((v) => (v === "" ? undefined : v)),
+
   projeto: z.enum(PROJETOS, { message: "Escolha o tipo de projeto" }),
   orcamento: z.enum(ORCAMENTOS).optional(),
   mensagem: z.string().min(10, { message: "Descreva brevemente o que você precisa" }).trim(),
@@ -61,9 +63,9 @@ export default function ContatoPage() {
     watch,
   } = useForm<FormData>({
     resolver: zodResolver(schema),
-    // Como os campos podem ser opcionais, defaultValues pode ser vazio.
-    // Se quiser, pode manter defaults explícitos usando Partial<FormData>.
-    defaultValues: {} as Partial<FormData>,
+    defaultValues: {
+      whatsapp: undefined, // garante a presença da chave desde o início
+    } as Partial<FormData>,
   });
 
   const nome = watch("nome") ?? "";
@@ -212,7 +214,7 @@ export default function ContatoPage() {
               id="mensagem"
               {...register("mensagem")}
               placeholder="Descreva objetivo, prazo e referências"
-              className={`min-h[140px] w-full rounded-2xl bg-white/5 p-3 border outline-none focus:ring-2 focus:ring-[color:var(--brand-b)] ${
+              className={`min-h-[140px] w-full rounded-2xl bg-white/5 p-3 border outline-none focus:ring-2 focus:ring-[color:var(--brand-b)] ${
                 errors.mensagem ? "border-red-400" : "border-white/10"
               }`}
               aria-invalid={!!errors.mensagem}
