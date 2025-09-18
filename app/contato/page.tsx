@@ -61,10 +61,9 @@ export default function ContatoPage() {
     watch,
   } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: {
-      projeto: undefined,
-      orcamento: undefined,
-    } as Partial<FormData>,
+    // Como os campos podem ser opcionais, defaultValues pode ser vazio.
+    // Se quiser, pode manter defaults explícitos usando Partial<FormData>.
+    defaultValues: {} as Partial<FormData>,
   });
 
   const nome = watch("nome") ?? "";
@@ -161,7 +160,9 @@ export default function ContatoPage() {
               id="whatsapp"
               {...register("whatsapp")}
               placeholder="(82) 99999-9999"
-              onChange={(e) => setValue("whatsapp", maskPhone(e.target.value), { shouldValidate: true })}
+              onChange={(e) =>
+                setValue("whatsapp", maskPhone(e.target.value), { shouldValidate: true })
+              }
               className="w-full rounded-2xl bg-white/5 p-3 border border-white/10 outline-none focus:ring-2 focus:ring-[color:var(--brand-b)]"
               inputMode="tel"
               autoComplete="tel"
@@ -211,7 +212,7 @@ export default function ContatoPage() {
               id="mensagem"
               {...register("mensagem")}
               placeholder="Descreva objetivo, prazo e referências"
-              className={`min-h-[140px] w-full rounded-2xl bg-white/5 p-3 border outline-none focus:ring-2 focus:ring-[color:var(--brand-b)] ${
+              className={`min-h[140px] w-full rounded-2xl bg-white/5 p-3 border outline-none focus:ring-2 focus:ring-[color:var(--brand-b)] ${
                 errors.mensagem ? "border-red-400" : "border-white/10"
               }`}
               aria-invalid={!!errors.mensagem}
