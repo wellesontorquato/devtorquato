@@ -1,13 +1,8 @@
-// next.config.js
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  // ❌ Remova isto se existir:
-  // output: 'export',
+import type { NextConfig } from 'next';
 
-  // ✅ Use serverful em container (ótimo para Railway):
+const nextConfig: NextConfig = {
+  // ❌ REMOVA: output: 'export',
   output: 'standalone',
-
-  // (opcional) se você tinha outras configs, mantenha-as aqui
 };
 
-module.exports = nextConfig;
+export default nextConfig;
