@@ -1,103 +1,225 @@
-import Image from "next/image";
+"use client";
 
+import { motion } from "framer-motion";
+import ServiceCard from "@/components/service-card";
+import type { SVGProps } from "react";
+
+/* =========================
+   ÍCONES SEGUROS P/ Hidratação
+   ========================= */
+function IconBase({
+  children,
+  ...props
+}: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+      suppressHydrationWarning
+      {...props}
+    >
+      {children}
+    </svg>
+  );
+}
+
+function IconInstitutional(props: SVGProps<SVGSVGElement>) {
+  return (
+    <IconBase {...props}>
+      <path
+        suppressHydrationWarning
+        d="M4 20h16M6 20V9l6-4 6 4v11M8 12h3m2 0h3M8 16h3m2 0h3"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </IconBase>
+  );
+}
+function IconLanding(props: SVGProps<SVGSVGElement>) {
+  return (
+    <IconBase {...props}>
+      <path
+        suppressHydrationWarning
+        d="M5 19h14M12 3v8m0 0l3-3m-3 3L9 8"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </IconBase>
+  );
+}
+function IconSaaS(props: SVGProps<SVGSVGElement>) {
+  return (
+    <IconBase {...props}>
+      <path
+        suppressHydrationWarning
+        d="M7 18h10a4 4 0 0 0 0-8 5 5 0 0 0-9.6-1.8A4 4 0 0 0 7 18Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </IconBase>
+  );
+}
+function IconAutomation(props: SVGProps<SVGSVGElement>) {
+  return (
+    <IconBase {...props}>
+      <path
+        suppressHydrationWarning
+        d="M12 8v8m-4-4h8M4 12a8 8 0 1 0 16 0A8 8 0 0 0 4 12Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </IconBase>
+  );
+}
+
+/* =========================
+   Dados
+   ========================= */
+const services = [
+  {
+    id: "institucionais",
+    title: "Sites Institucionais",
+    desc: "Presença sólida, rápido e SEO básico.",
+    href: "/servicos#institucionais",
+    tag: "SEO/Performance",
+    icon: <IconInstitutional className="h-5 w-5" />,
+  },
+  {
+    id: "landing",
+    title: "Landing Pages",
+    desc: "Conversão alta + testes A/B e integrações.",
+    href: "/servicos#landing",
+    tag: "Crescimento",
+    icon: <IconLanding className="h-5 w-5" />,
+  },
+  {
+    id: "saas",
+    title: "SaaS Escalável",
+    desc: "Multi-tenant, billing, filas, observabilidade.",
+    href: "/servicos#saas",
+    tag: "Produto",
+    icon: <IconSaaS className="h-5 w-5" />,
+  },
+  {
+    id: "automacoes",
+    title: "Automações de Processos",
+    desc: "Integrações com WhatsApp, planilhas e ERPs.",
+    href: "/servicos#automacoes",
+    tag: "Eficiência",
+    icon: <IconAutomation className="h-5 w-5" />,
+  },
+];
+
+/* =========================
+   Página
+   ========================= */
 export default function Home() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="container-app">
+      {/* HERO */}
+      <section className="section">
+        <div className="hero-panel">
+          {/* decoração */}
+          <motion.div
+            aria-hidden
+            className="hero-glow hero-glow-a"
+            animate={{ y: [0, -12, 0] }}
+            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.div
+            aria-hidden
+            className="hero-glow hero-glow-b"
+            animate={{ y: [0, 12, 0] }}
+            transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <div aria-hidden className="hero-grid" />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+          {/* conteúdo do hero */}
+          <div className="grid md:grid-cols-2 gap-10 items-center p-8 md:p-12">
+            <div>
+              <motion.h1
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="h1"
+              >
+                Sites institucionais, landing pages sob medida e{" "}
+                <span className="brand-text">sistemas SaaS escaláveis</span>
+              </motion.h1>
+
+              <p className="mt-5 muted">
+                Soluções rápidas, bonitas e com automações que economizam tempo e reduzem erros.
+              </p>
+
+              <div className="mt-7 flex gap-3">
+                <a href="/contato" className="btn btn-primary">Solicitar proposta</a>
+                <a href="/cases" className="btn btn-outline">Ver cases</a>
+              </div>
+            </div>
+
+            <div
+              className="hidden md:flex glass items-center justify-center h-full"
+              aria-hidden="true"
+            >
+              <img src="/logo-devtorquato.png" alt="" className="mx-auto h-24 opacity-90" />
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </section>
+
+      {/* SERVIÇOS */}
+      <section id="servicos" className="section">
+        <h2 className="h2">Serviços</h2>
+        <p className="muted mt-2">Do institucional ao SaaS, com foco em resultado.</p>
+
+        {/* Mobile: carrossel horizontal com snap */}
+        <div className="mt-6 md:hidden -mx-4 px-4">
+          <div
+            aria-label="Galeria de serviços"
+            className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-none mask-edges pb-2"
+          >
+            {services.map((s) => (
+              <div
+                key={s.id}
+                className="snap-start shrink-0 w-[84%] max-w-[360px]"
+              >
+                <ServiceCard
+                  title={s.title}
+                  desc={s.desc}
+                  href={s.href}
+                  tag={s.tag}
+                  icon={s.icon}
+                  cta="Ver detalhes"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Desktop: grade padrão */}
+        <div className="mt-6 hidden md:grid md:grid-cols-2 gap-6">
+          {services.map((s) => (
+            <ServiceCard
+              key={s.id}
+              title={s.title}
+              desc={s.desc}
+              href={s.href}
+              tag={s.tag}
+              icon={s.icon}
+              cta="Ver detalhes"
+            />
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

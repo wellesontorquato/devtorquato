@@ -1,7 +1,9 @@
+// next.config.ts
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Gera bundle 'standalone' (menor superfície no deploy)
+  output: "standalone",
 };
 
 export default nextConfig;
