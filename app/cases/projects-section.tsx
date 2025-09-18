@@ -5,16 +5,28 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 /* ---------- helpers ---------- */
-function useIsMobile(breakpoint = 768) {
+function useIsMobile(breakpoint = 768): boolean {
   const [isMobile, setIsMobile] = useState(false);
+
   useEffect(() => {
     const mql = window.matchMedia(`(max-width:${breakpoint - 1}px)`);
-    const onChange = (e: MediaQueryListEvent | MediaQueryList) =>
-      setIsMobile("matches" in e ? e.matches : (e as MediaQueryList).matches);
-    onChange(mql);
-    mql.addEventListener?.("change", onChange as any);
-    return () => mql.removeEventListener?.("change", onChange as any);
+
+    // inicial
+    setIsMobile(mql.matches);
+
+    // listener tipado (sem any) + fallback
+    const handleChange = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+
+    if (typeof mql.addEventListener === "function") {
+      mql.addEventListener("change", handleChange);
+      return () => mql.removeEventListener("change", handleChange);
+    } else {
+      // Safari/legacy
+      mql.addListener(handleChange);
+      return () => mql.removeListener(handleChange);
+    }
   }, [breakpoint]);
+
   return isMobile;
 }
 
@@ -44,7 +56,7 @@ const projects: Project[] = [
     image: "/assets/sellerzone-preview.png",
   },
 
-  // —— Landing pages ——
+  // —— Landing pages —— 
   {
     title: "Landing — Fotógrafo",
     desc:
@@ -67,14 +79,13 @@ const projects: Project[] = [
     image: "/assets/portfolio3-preview.png",
   },
 
-    {
+  {
     title: "Projeto Hemodiálise",
     desc:
       "Sistema para gestão de pacientes em clínicas de hemodiálise: cadastro, evoluções e controle de máquinas.",
     image: "/assets/projetohemodialise-preview.png",
   },
 ];
-
 
 /* ---------- component ---------- */
 export default function ProjectsSection() {
@@ -90,7 +101,7 @@ export default function ProjectsSection() {
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
-  // card reutilizável (render igual no mobile e desktop)
+  // card reutilizável
   function ProjectCard(p: Project) {
     return (
       <article className="card overflow-hidden p-0">
@@ -139,7 +150,6 @@ export default function ProjectsSection() {
 
       {/* MOBILE: galeria horizontal com scroll-snap */}
       <div className="mt-6 -mx-4 md:hidden relative">
-        {/* bordas com fade para sugerir rolagem */}
         <div aria-hidden className="pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-[var(--bg)] to-transparent" />
         <div aria-hidden className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-[var(--bg)] to-transparent" />
 
@@ -162,7 +172,7 @@ export default function ProjectsSection() {
         ))}
       </div>
 
-      {/* LIGHTBOX (inalterado) */}
+      {/* LIGHTBOX */}
       <AnimatePresence>
         {open && (
           <>
@@ -263,7 +273,7 @@ export default function ProjectsSection() {
                       dragConstraints={{ top: 0, bottom: 0 }}
                       dragElastic={0.2}
                       onDragEnd={(_, info) => {
-                        if (info.offset.y > 120) setOpen(null); // swipe-down
+                        if (info.offset.y > 120) setOpen(null);
                       }}
                     >
                       <Image
