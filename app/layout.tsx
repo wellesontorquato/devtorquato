@@ -30,9 +30,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
 
         <CookieConsent
           title="Cookies"
-          message="Usamos cookies para melhorar sua experiência e entender como você usa o site. Você pode aceitar ou recusar"
-          acceptLabel="Aceitar"
-          rejectLabel="Recusar"
+          message="Usamos cookies para melhorar sua experiência e entender como você usa o site."
+          acceptAllLabel="Aceitar tudo"
+          rejectAllLabel="Recusar"
+          settingsLabel="Configurar"
+          saveLabel="Salvar preferências"
+          backLabel="Voltar"
           policyLabel="Política de Privacidade"
           policyHref="/politica-privacidade"
           maxAgeDays={180}

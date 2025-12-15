@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+/* ================== TIPOS ================== */
+
 type Preferences = {
   essential: true;
   analytics: boolean;
@@ -15,17 +17,49 @@ const DEFAULT_PREFS: Preferences = {
 };
 
 type CookieConsentProps = {
+  /* textos */
+  title?: string;
+  message?: string;
+
+  acceptAllLabel?: string;
+  rejectAllLabel?: string;
+  settingsLabel?: string;
+  saveLabel?: string;
+  backLabel?: string;
+
+  policyLabel?: string;
+  policyHref?: string;
+
+  /* comportamento */
   storageKey?: string;
   maxAgeDays?: number;
   position?: "bottom" | "top";
 };
+
+/* ================== HELPERS ================== */
 
 function isExpired(savedAt: number, maxAgeDays: number) {
   const ms = maxAgeDays * 24 * 60 * 60 * 1000;
   return Date.now() - savedAt > ms;
 }
 
+/* ================== COMPONENT ================== */
+
 export default function CookieConsent({
+  /* textos */
+  title = "Cookies",
+  message =
+    "Usamos cookies para melhorar sua experiência. Você pode aceitar, recusar ou personalizar.",
+  acceptAllLabel = "Aceitar tudo",
+  rejectAllLabel = "Recusar",
+  settingsLabel = "Configurar",
+  saveLabel = "Salvar preferências",
+  backLabel = "Voltar",
+
+  policyLabel = "Política de Privacidade",
+  policyHref = "/politica-privacidade",
+
+  /* comportamento */
   storageKey = "cookie_consent_v2",
   maxAgeDays = 180,
   position = "bottom",
@@ -41,6 +75,8 @@ export default function CookieConsent({
         : "fixed inset-x-0 bottom-0 z-50 p-4",
     [position]
   );
+
+  /* ================== INIT ================== */
 
   useEffect(() => {
     try {
@@ -68,6 +104,8 @@ export default function CookieConsent({
     }
   }, [storageKey, maxAgeDays]);
 
+  /* ================== ACTIONS ================== */
+
   function savePreferences(newPrefs: Preferences) {
     try {
       localStorage.setItem(
@@ -84,6 +122,8 @@ export default function CookieConsent({
 
   if (!open) return null;
 
+  /* ================== RENDER ================== */
+
   return (
     <div className={wrapperPosClass} role="dialog" aria-live="polite">
       <div className="mx-auto max-w-6xl">
@@ -92,10 +132,18 @@ export default function CookieConsent({
             /* ===== BANNER ===== */
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div className="text-sm leading-relaxed">
-                <p className="font-semibold">Cookies</p>
+                <p className="font-semibold">{title}</p>
                 <p className="muted">
-                  Usamos cookies para melhorar sua experiência. Você pode aceitar,
-                  recusar ou personalizar.
+                  {message}{" "}
+                  {policyHref && (
+                    <a
+                      href={policyHref}
+                      className="underline underline-offset-4 hover:opacity-90"
+                    >
+                      {policyLabel}
+                    </a>
+                  )}
+                  .
                 </p>
               </div>
 
@@ -103,17 +151,21 @@ export default function CookieConsent({
                 <button
                   className="btn btn-outline py-2 cursor-pointer"
                   onClick={() =>
-                    savePreferences({ essential: true, analytics: false, marketing: false })
+                    savePreferences({
+                      essential: true,
+                      analytics: false,
+                      marketing: false,
+                    })
                   }
                 >
-                  Recusar
+                  {rejectAllLabel}
                 </button>
 
                 <button
                   className="btn btn-outline py-2 cursor-pointer"
                   onClick={() => setShowPrefs(true)}
                 >
-                  Configurar
+                  {settingsLabel}
                 </button>
 
                 <button
@@ -123,10 +175,14 @@ export default function CookieConsent({
                     hover:-translate-y-[1px] hover:brightness-110
                   "
                   onClick={() =>
-                    savePreferences({ essential: true, analytics: true, marketing: true })
+                    savePreferences({
+                      essential: true,
+                      analytics: true,
+                      marketing: true,
+                    })
                   }
                 >
-                  Aceitar tudo
+                  {acceptAllLabel}
                 </button>
               </div>
             </div>
@@ -184,14 +240,14 @@ export default function CookieConsent({
                   className="btn btn-outline py-2 cursor-pointer"
                   onClick={() => setShowPrefs(false)}
                 >
-                  Voltar
+                  {backLabel}
                 </button>
 
                 <button
                   className="btn btn-primary py-2 cursor-pointer"
                   onClick={() => savePreferences(prefs)}
                 >
-                  Salvar preferências
+                  {saveLabel}
                 </button>
               </div>
             </div>
