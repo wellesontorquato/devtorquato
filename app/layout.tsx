@@ -21,11 +21,23 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       className={`dark ${sora.variable} ${inter.variable}`}
       suppressHydrationWarning
     >
-      <body className="bg-[var(--bg)] text-[var(--fg)] antialiased font-[var(--font-sora)]">
+      <body className="min-h-screen bg-[var(--bg)] text-[var(--fg)] antialiased font-[var(--font-sora)]">
         <Navbar />
-        <main className="min-h-screen">{children}</main>
+
+        <main className="flex-1">{children}</main>
+
         <Footer />
-        <CookieConsent /> 
+
+        <CookieConsent
+          title="Cookies"
+          message="Usamos cookies para melhorar sua experiência e entender como você usa o site. Você pode aceitar ou recusar"
+          acceptLabel="Aceitar"
+          rejectLabel="Recusar"
+          policyLabel="Política de Privacidade"
+          policyHref="/politica-privacidade"
+          maxAgeDays={180}
+          position="bottom"
+        />
       </body>
     </html>
   );
