@@ -9,12 +9,17 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata = {
   title: "DevTorquato — Sites, Landing Pages e SaaS escalável",
-  description: "Soluções rápidas, bonitas e com automações que economizam tempo e reduzem erros.",
+  description:
+    "Soluções rápidas, bonitas e com automações que economizam tempo e reduzem erros.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="pt-BR" suppressHydrationWarning className={`${sora.variable} ${inter.variable}`}>
+    <html
+      lang="pt-BR"
+      className={`dark ${sora.variable} ${inter.variable}`}
+      suppressHydrationWarning
+    >
       <body className="bg-[var(--bg)] text-[var(--fg)] antialiased font-[var(--font-sora)]">
         <Navbar />
         <main className="min-h-screen">{children}</main>
