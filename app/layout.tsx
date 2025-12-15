@@ -3,6 +3,7 @@ import { ReactNode } from "react";
 import { Sora, Inter } from "next/font/google";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
+import CookieConsent from "@/components/cookie-consent";
 
 const sora = Sora({ subsets: ["latin"], variable: "--font-sora" });
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -24,6 +25,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <Navbar />
         <main className="min-h-screen">{children}</main>
         <Footer />
+        <CookieConsent /> 
       </body>
     </html>
   );
