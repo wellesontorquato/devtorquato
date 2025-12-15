@@ -1,162 +1,282 @@
 @import "tailwindcss";
 
 /* ============== TOKENS ================= */
+/* LIGHT (default) */
 :root {
+  --bg: #ffffff;
+  --bg-elev: #f8fafc;
+  --fg: #0b0f14;
+  --fg-muted: #4b5563;
+  --border: rgba(2,6,23,0.08);
+
+  --brand-a: #15c39a;
+  --brand-b: #0ea5ff;
+  --radius: 16px;
+
+  /* header / navegação */
+  --nav-h: 64px;
+}
+
+/* DARK */
+.dark {
   --bg: #0b0f14;
   --bg-elev: #0f141a;
   --fg: #ffffff;
   --fg-muted: #e5e7eb;
   --border: rgba(255,255,255,0.08);
-  --brand-a: #15c39a;
-  --brand-b: #0ea5ff;
-  --radius: 16px;
-
-  /* NEW: altura do header para compensar o sticky em navegação por hash */
-  --nav-h: 64px;
 }
 
-/* tema claro opcional */
-@media (prefers-color-scheme: light) {
-  :root {
-    --bg: #ffffff;
-    --bg-elev: #f8fafc;
-    --fg: #0b0f14;
-    --fg-muted: #4b5563;
-    --border: rgba(2,6,23,0.08);
-  }
-}
-
-/* NEW: ajuste da altura do header no desktop */
+/* ajuste da altura do header no desktop */
 @media (min-width: 768px) {
-  :root { --nav-h: 72px; } /* troque se seu header for maior/menor */
+  :root { --nav-h: 72px; }
 }
 
 /* ============== BASE =================== */
-html, body { height: 100%; }
-body { background: var(--bg); color: var(--fg); }
-* { border-color: var(--border); }
+html,
+body {
+  height: 100%;
+}
 
-/* NEW: rolagem suave e padding para o topo considerar o header sticky */
+body {
+  background: var(--bg);
+  color: var(--fg);
+}
+
+* {
+  border-color: var(--border);
+}
+
+/* rolagem suave + compensação do header sticky */
 html {
-  scroll-behavior: smooth; /* opcional */
+  scroll-behavior: smooth;
   scroll-padding-top: calc(var(--nav-h) + env(safe-area-inset-top, 0px));
 }
 
-/* NEW: utilitário para aplicar manualmente nos alvos (#ids) se quiser */
-.scroll-mt-nav { scroll-margin-top: var(--nav-h); }
+/* utilitário para âncoras */
+.scroll-mt-nav {
+  scroll-margin-top: var(--nav-h);
+}
 
 /* ============== UTILITÁRIAS ============ */
-/* sem variantes (md:, hover:) dentro de @apply – Tailwind v4 não curte */
-.container-app { @apply mx-auto max-w-6xl px-4; }
-@screen md { .container-app { @apply px-6; } }
+.container-app {
+  @apply mx-auto max-w-6xl px-4;
+}
+@screen md {
+  .container-app { @apply px-6; }
+}
 
-.section { @apply py-14; }
-@screen md { .section { @apply py-20; } }
+.section {
+  @apply py-14;
+}
+@screen md {
+  .section { @apply py-20; }
+}
 
-.h1 { @apply text-4xl font-bold leading-tight; }
-@screen md { .h1 { @apply text-5xl; } }
+.h1 {
+  @apply text-4xl font-bold leading-tight;
+}
+@screen md {
+  .h1 { @apply text-5xl; }
+}
 
-.h2 { @apply text-2xl font-semibold; }
-@screen md { .h2 { @apply text-3xl; } }
+.h2 {
+  @apply text-2xl font-semibold;
+}
+@screen md {
+  .h2 { @apply text-3xl; }
+}
 
-.h3 { @apply text-lg font-semibold; }
-@screen md { .h3 { @apply text-xl; } }
+.h3 {
+  @apply text-lg font-semibold;
+}
+@screen md {
+  .h3 { @apply text-xl; }
+}
 
-.muted { @apply text-white/70; }
+/* texto secundário */
+.muted {
+  color: var(--fg-muted);
+}
 
-.btn { @apply inline-flex items-center justify-center rounded-2xl px-5 py-3 font-medium transition; }
-.btn-primary { color: #fff; background: linear-gradient(90deg,var(--brand-a),var(--brand-b)); }
-.btn-outline { @apply border text-white/90; }
-.btn-outline:hover { background: rgba(255,255,255,0.05); }
+/* botões */
+.btn {
+  @apply inline-flex items-center justify-center rounded-2xl px-5 py-3 font-medium transition;
+}
 
-.card { @apply rounded-2xl p-6 border; background: var(--bg-elev); }
-.glass { @apply rounded-2xl p-6 border; backdrop-filter: blur(10px); background: rgba(255,255,255,0.04); }
+.btn-primary {
+  color: #fff;
+  background: linear-gradient(90deg, var(--brand-a), var(--brand-b));
+}
 
+.btn-outline {
+  @apply border;
+  color: var(--fg);
+  background: transparent;
+}
+
+.btn-outline:hover {
+  background: color-mix(in srgb, var(--fg) 6%, transparent);
+}
+
+/* cards */
+.card {
+  @apply rounded-2xl p-6 border;
+  background: var(--bg-elev);
+}
+
+/* glassmorphism */
+.glass {
+  @apply rounded-2xl p-6 border;
+  backdrop-filter: blur(10px);
+  background: color-mix(in srgb, var(--bg) 75%, transparent);
+}
+
+.dark .glass {
+  background: rgba(255,255,255,0.04);
+}
+
+/* texto com gradiente da marca */
 .brand-text {
   background: linear-gradient(90deg, var(--brand-a), var(--brand-b));
-  -webkit-background-clip: text; background-clip: text; color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 /* foco acessível */
-:focus-visible { outline: 2px solid color-mix(in srgb, var(--brand-b) 70%, white); outline-offset: 2px; border-radius: 10px; }
+:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--brand-b) 70%, white);
+  outline-offset: 2px;
+  border-radius: 10px;
+}
 
-/* --- Utilitários de marca (evita inline style) --- */
-.bg-blob-a      { background: radial-gradient(closest-side, var(--brand-a), transparent); }
-.bg-blob-b      { background: radial-gradient(closest-side, var(--brand-b), transparent); }
-.hr-brand       { background: linear-gradient(90deg, transparent, var(--brand-b), transparent); }
-.bg-brand-grad  { background: linear-gradient(90deg, var(--brand-a), var(--brand-b)); }
-.border-token   { border-color: var(--border); }
+/* --- Utilitários de marca --- */
+.bg-blob-a {
+  background: radial-gradient(closest-side, var(--brand-a), transparent);
+}
 
-/* ---- HERO PANEL (lightbox) --------------------------------------------- */
+.bg-blob-b {
+  background: radial-gradient(closest-side, var(--brand-b), transparent);
+}
 
+.hr-brand {
+  background: linear-gradient(90deg, transparent, var(--brand-b), transparent);
+}
+
+.bg-brand-grad {
+  background: linear-gradient(90deg, var(--brand-a), var(--brand-b));
+}
+
+.border-token {
+  border-color: var(--border);
+}
+
+/* ============== HERO PANEL ================= */
 .hero-panel {
   position: relative;
   overflow: hidden;
-  border-radius: 1.25rem;           /* ~rounded-2xl */
+  border-radius: 1.25rem;
   border: 1px solid var(--border);
+  backdrop-filter: blur(8px);
+  background: linear-gradient(
+    180deg,
+    rgba(2,6,23,0.03),
+    rgba(2,6,23,0.01)
+  );
+}
+
+.dark .hero-panel {
   background:
     linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)),
     rgba(0,0,0,0.18);
-  backdrop-filter: blur(8px);
 }
 
-/* “glows” sem inline style — usam vars da marca */
+/* glows */
 .hero-glow {
   position: absolute;
   border-radius: 9999px;
   filter: blur(42px);
   pointer-events: none;
 }
+
 .hero-glow-a {
   top: -22%;
   left: -14%;
   width: 42rem;
   height: 42rem;
   background: radial-gradient(closest-side, var(--brand-b), transparent);
-  opacity: .22;
+  opacity: 0.22;
 }
+
 .hero-glow-b {
   bottom: -26%;
   right: -18%;
   width: 48rem;
   height: 48rem;
   background: radial-gradient(closest-side, var(--brand-a), transparent);
-  opacity: .18;
+  opacity: 0.18;
 }
 
-/* grid-lines super discretas com máscara para não poluir as bordas */
+/* grid do hero */
 .hero-grid {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(to right, rgba(255,255,255,.04) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255,255,255,.04) 1px, transparent 1px);
-  background-size: 42px 42px, 42px 42px;
+    linear-gradient(to right, rgba(2,6,23,.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(2,6,23,.06) 1px, transparent 1px);
+  background-size: 42px 42px;
   mask-image: radial-gradient(70% 60% at 50% 40%, black, transparent);
   pointer-events: none;
-  opacity: .35;
+  opacity: 0.35;
 }
 
-/* reduz animações para quem prefere menos movimento */
+.dark .hero-grid {
+  background-image:
+    linear-gradient(to right, rgba(255,255,255,.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,.04) 1px, transparent 1px);
+}
+
+/* reduzir movimento */
 @media (prefers-reduced-motion: reduce) {
-  .hero-glow-a, .hero-glow-b { animation: none !important; transform: none !important; }
+  .hero-glow-a,
+  .hero-glow-b {
+    animation: none !important;
+    transform: none !important;
+  }
 }
 
-/* Esconde a scrollbar no mobile (sem quebrar acessibilidade) */
-.scrollbar-none::-webkit-scrollbar { display: none; }
-.scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+/* scrollbar */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
 
-/* Suave “fade” nas bordas para indicar que há mais conteúdo */
+/* fade lateral */
 .mask-edges {
-  -webkit-mask-image: linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent);
-  mask-image: linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent);
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 24px,
+    black calc(100% - 24px),
+    transparent
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 24px,
+    black calc(100% - 24px),
+    transparent
+  );
 }
 
-/* esconde a scrollbar só visualmente (a rolagem continua ativa) */
+/* esconder scrollbar sem quebrar rolagem */
 .no-scrollbar {
-  -ms-overflow-style: none; /* IE/Edge */
-  scrollbar-width: none;    /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 .no-scrollbar::-webkit-scrollbar {
-  display: none;            /* Chrome/Safari */
+  display: none;
 }
