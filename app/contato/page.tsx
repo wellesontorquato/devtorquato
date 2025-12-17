@@ -1,9 +1,9 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 /* --- Enums compatíveis com Zod v4 --- */
@@ -22,6 +22,9 @@ const LABEL_ORCAMENTO: Record<(typeof ORCAMENTOS)[number], string> = {
   profissional: "R$ 5k — 12k",
   sobmedida: "Acima de R$ 12k",
 };
+
+const PROJETO_OPTS = PROJETOS.map((p) => ({ value: p, label: LABEL_PROJETO[p] }));
+const ORCAMENTO_OPTS = ORCAMENTOS.map((o) => ({ value: o, label: LABEL_ORCAMENTO[o] }));
 
 /* --- Schema Zod v4 --- */
 const schema = z.object({
@@ -53,6 +56,230 @@ function maskPhone(v: string) {
   return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
 }
 
+type Opt<T extends string> = { value: T; label: string };
+
+function SelectCustom<T extends string>(props: {
+  label: string;
+  value?: T;
+  onChange: (v: T | undefined) => void;
+  options: Opt<T>[];
+  placeholder?: string;
+  required?: boolean;
+  error?: string;
+}) {
+  const { label, value, onChange, options, placeholder = "Selecione", required, error } = props;
+
+  const [open, setOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState<number>(() => {
+    const idx = options.findIndex((o) => o.value === value);
+    return idx >= 0 ? idx : 0;
+  });
+
+  const id = useId();
+  const ref = useRef<HTMLDivElement | null>(null);
+  const btnRef = useRef<HTMLButtonElement | null>(null);
+
+  const currentIndex = useMemo(() => {
+    const idx = options.findIndex((o) => o.value === value);
+    return idx >= 0 ? idx : -1;
+  }, [options, value]);
+
+  const currentLabel = useMemo(() => {
+    const found = options.find((o) => o.value === value);
+    return found?.label ?? "";
+  }, [options, value]);
+
+  // fecha clicando fora
+  useEffect(() => {
+    function onDoc(e: MouseEvent) {
+      if (!ref.current) return;
+      if (!ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, []);
+
+  // quando abre, seta índice ativo
+  useEffect(() => {
+    if (!open) return;
+    setActiveIndex(currentIndex >= 0 ? currentIndex : 0);
+  }, [open, currentIndex]);
+
+  // teclado: ↑ ↓ Enter Esc Home End
+  function onKeyDown(e: React.KeyboardEvent) {
+    if (!open) {
+      if (e.key === "Enter" || e.key === " " || e.key === "ArrowDown") {
+        e.preventDefault();
+        setOpen(true);
+      }
+      return;
+    }
+
+    if (e.key === "Escape") {
+      e.preventDefault();
+      setOpen(false);
+      btnRef.current?.focus();
+      return;
+    }
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActiveIndex((i) => Math.min(i + 1, options.length - 1));
+      return;
+    }
+
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveIndex((i) => Math.max(i - 1, 0));
+      return;
+    }
+
+    if (e.key === "Home") {
+      e.preventDefault();
+      setActiveIndex(0);
+      return;
+    }
+
+    if (e.key === "End") {
+      e.preventDefault();
+      setActiveIndex(options.length - 1);
+      return;
+    }
+
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const opt = options[activeIndex];
+      if (opt) {
+        onChange(opt.value);
+        setOpen(false);
+        btnRef.current?.focus();
+      }
+      return;
+    }
+  }
+
+  // typeahead simples (digitar para buscar)
+  const typeRef = useRef("");
+  const typeTimer = useRef<number | null>(null);
+  function onTypeAhead(char: string) {
+    const c = char.toLowerCase();
+    typeRef.current = (typeRef.current + c).slice(0, 32);
+
+    const idx = options.findIndex((o) => o.label.toLowerCase().startsWith(typeRef.current));
+    if (idx >= 0) setActiveIndex(idx);
+
+    if (typeTimer.current) window.clearTimeout(typeTimer.current);
+    typeTimer.current = window.setTimeout(() => {
+      typeRef.current = "";
+      typeTimer.current = null;
+    }, 650);
+  }
+
+  const listboxId = `${id}-listbox`;
+
+  return (
+    <div ref={ref}>
+      <label className="block text-sm text-white/80 mb-1" htmlFor={id}>
+        {label}
+        {required ? "*" : ""}
+      </label>
+
+      <button
+        ref={btnRef}
+        id={id}
+        type="button"
+        onClick={() => setOpen((s) => !s)}
+        onKeyDown={(e) => {
+          // typeahead no botão também
+          if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+            onTypeAhead(e.key);
+          }
+          onKeyDown(e);
+        }}
+        className={[
+          "w-full rounded-2xl bg-white/5 p-3 border outline-none text-left",
+          "focus:ring-2 focus:ring-[color:var(--brand-b)]",
+          error ? "border-red-400" : "border-white/10",
+          "flex items-center justify-between gap-3",
+        ].join(" ")}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls={listboxId}
+      >
+        <span className={currentLabel ? "text-white/90" : "text-white/50"}>
+          {currentLabel || placeholder}
+        </span>
+        <span className="text-white/60">▼</span>
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            key="dropdown"
+            id={listboxId}
+            role="listbox"
+            initial={{ opacity: 0, y: 6, scale: 0.99 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 6, scale: 0.99 }}
+            transition={{ duration: 0.14 }}
+            className="mt-2 w-full rounded-2xl border border-white/10 bg-[color:var(--bg-elev)] shadow-xl overflow-hidden"
+            onKeyDown={(e) => {
+              if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                onTypeAhead(e.key);
+              }
+              onKeyDown(e);
+            }}
+          >
+            {options.map((opt, idx) => {
+              const selected = opt.value === value;
+              const active = idx === activeIndex;
+
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  role="option"
+                  aria-selected={selected}
+                  onMouseEnter={() => setActiveIndex(idx)}
+                  onClick={() => {
+                    onChange(opt.value);
+                    setOpen(false);
+                    btnRef.current?.focus();
+                  }}
+                  className={[
+                    "w-full px-4 py-3 text-left text-sm",
+                    "hover:bg-white/5",
+                    selected ? "text-white" : "text-white/85",
+                    active ? "bg-white/10" : "",
+                  ].join(" ")}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+
+            {!required && (
+              <button
+                type="button"
+                onClick={() => {
+                  onChange(undefined);
+                  setOpen(false);
+                  btnRef.current?.focus();
+                }}
+                className="w-full px-4 py-3 text-left text-sm text-white/60 hover:bg-white/5 border-t border-white/10"
+              >
+                Limpar seleção
+              </button>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {error && <p className="text-red-400 text-sm mt-1">{error}</p>}
+    </div>
+  );
+}
+
 export default function ContatoPage() {
   const [status, setStatus] = useState<"idle" | "ok" | "erro">("idle");
   const [loading, setLoading] = useState(false);
@@ -64,17 +291,19 @@ export default function ContatoPage() {
     reset,
     setValue,
     watch,
+    control,
   } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
-      whatsapp: undefined, // garante a presença da chave desde o início
+      whatsapp: undefined,
+      orcamento: undefined,
     } as Partial<FormData>,
   });
 
   const nome = watch("nome") ?? "";
   const email = watch("email") ?? "";
   const mensagem = watch("mensagem") ?? "";
-  const projetoSel = watch("projeto"); // "institucional" | ... | undefined
+  const projetoSel = watch("projeto");
 
   const waHref = useMemo(() => {
     const base = "https://wa.me/5582999405099";
@@ -89,11 +318,13 @@ export default function ContatoPage() {
     try {
       if (data.website) return; // honeypot
       setLoading(true);
+
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
+
       if (!res.ok) throw new Error("fail");
       setStatus("ok");
       reset();
@@ -105,28 +336,11 @@ export default function ContatoPage() {
     }
   }
 
-  // classes reaproveitáveis (inputs e selects com o mesmo visual)
   const baseField =
     "w-full rounded-2xl bg-white/5 p-3 border outline-none focus:ring-2 focus:ring-[color:var(--brand-b)]";
 
-  // select: remove aparência nativa e habilita tema dark quando suportado
-  const selectField =
-    `${baseField} pr-10 appearance-none [-webkit-appearance:none] [color-scheme:dark]`;
-
   return (
     <section className="container-app section grid md:grid-cols-2 gap-10 items-start">
-      {/* CSS local para forçar options em dark quando o browser respeita */}
-      <style jsx global>{`
-        :root { color-scheme: dark; }
-        select option {
-          background: #0b1220;
-          color: #eaf0fb;
-        }
-        select option[disabled] {
-          color: rgba(234,240,251,.55);
-        }
-      `}</style>
-
       {/* FORM */}
       <motion.div className="card" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="h1">Vamos conversar</h1>
@@ -134,16 +348,12 @@ export default function ContatoPage() {
 
         <form noValidate onSubmit={handleSubmit(onSubmit)} className="mt-6 grid gap-4">
           {/* Honeypot invisível */}
-          <input
-            type="text"
-            {...register("website")}
-            className="hidden"
-            tabIndex={-1}
-            autoComplete="off"
-          />
+          <input type="text" {...register("website")} className="hidden" tabIndex={-1} autoComplete="off" />
 
           <div>
-            <label className="block text-sm text-white/80 mb-1" htmlFor="nome">Nome*</label>
+            <label className="block text-sm text-white/80 mb-1" htmlFor="nome">
+              Nome*
+            </label>
             <input
               id="nome"
               {...register("nome")}
@@ -161,7 +371,9 @@ export default function ContatoPage() {
           </div>
 
           <div>
-            <label className="block text-sm text-white/80 mb-1" htmlFor="email">E-mail*</label>
+            <label className="block text-sm text-white/80 mb-1" htmlFor="email">
+              E-mail*
+            </label>
             <input
               id="email"
               type="email"
@@ -180,7 +392,9 @@ export default function ContatoPage() {
           </div>
 
           <div>
-            <label className="block text-sm text-white/80 mb-1" htmlFor="whatsapp">WhatsApp (opcional)</label>
+            <label className="block text-sm text-white/80 mb-1" htmlFor="whatsapp">
+              WhatsApp (opcional)
+            </label>
             <input
               id="whatsapp"
               {...register("whatsapp")}
@@ -193,70 +407,39 @@ export default function ContatoPage() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
-            {/* SELECT PROJETO */}
-            <div>
-              <label className="block text-sm text-white/80 mb-1" htmlFor="projeto">Tipo de projeto*</label>
-
-              <div className="relative">
-                <select
-                  id="projeto"
-                  {...register("projeto")}
-                  defaultValue=""
-                  className={`${selectField} ${errors.projeto ? "border-red-400" : "border-white/10"}`}
-                  aria-invalid={!!errors.projeto}
-                  aria-describedby={errors.projeto ? "err-projeto" : undefined}
-                >
-                  <option value="" disabled>Selecione</option>
-                  {PROJETOS.map((p) => (
-                    <option key={p} value={p}>
-                      {LABEL_PROJETO[p]}
-                    </option>
-                  ))}
-                </select>
-
-                {/* setinha custom (não clicável) */}
-                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white/60">
-                  ▼
-                </span>
-              </div>
-
-              {errors.projeto && (
-                <p id="err-projeto" className="text-red-400 text-sm mt-1">
-                  {errors.projeto.message}
-                </p>
+            <Controller
+              name="projeto"
+              control={control}
+              render={({ field }) => (
+                <SelectCustom
+                  label="Tipo de projeto"
+                  required
+                  value={field.value}
+                  onChange={(v) => field.onChange(v)}
+                  options={PROJETO_OPTS}
+                  error={errors.projeto?.message as string | undefined}
+                />
               )}
-            </div>
+            />
 
-            {/* SELECT ORÇAMENTO */}
-            <div>
-              <label className="block text-sm text-white/80 mb-1" htmlFor="orcamento">
-                Faixa de orçamento (opcional)
-              </label>
-
-              <div className="relative">
-                <select
-                  id="orcamento"
-                  {...register("orcamento")}
-                  defaultValue=""
-                  className={`${selectField} border-white/10`}
-                >
-                  <option value="" disabled>Selecione</option>
-                  {ORCAMENTOS.map((o) => (
-                    <option key={o} value={o}>
-                      {LABEL_ORCAMENTO[o]}
-                    </option>
-                  ))}
-                </select>
-
-                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white/60">
-                  ▼
-                </span>
-              </div>
-            </div>
+            <Controller
+              name="orcamento"
+              control={control}
+              render={({ field }) => (
+                <SelectCustom
+                  label="Faixa de orçamento (opcional)"
+                  value={field.value}
+                  onChange={(v) => field.onChange(v)}
+                  options={ORCAMENTO_OPTS}
+                />
+              )}
+            />
           </div>
 
           <div>
-            <label className="block text-sm text-white/80 mb-1" htmlFor="mensagem">Mensagem*</label>
+            <label className="block text-sm text-white/80 mb-1" htmlFor="mensagem">
+              Mensagem*
+            </label>
             <textarea
               id="mensagem"
               {...register("mensagem")}
@@ -282,7 +465,6 @@ export default function ContatoPage() {
             </a>
           </div>
 
-          {/* mensagens de status com animação */}
           <AnimatePresence>
             {status === "ok" && (
               <motion.p
@@ -316,9 +498,13 @@ export default function ContatoPage() {
       <motion.aside className="card" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
         <h2 className="h2">Como funciona</h2>
         <ul className="mt-4 space-y-3 text-white/80">
-          <li>⏱️ Tempo médio de resposta: <strong>em até 1h útil</strong></li>
+          <li>
+            ⏱️ Tempo médio de resposta: <strong>em até 1h útil</strong>
+          </li>
           <li>🧪 Protótipo inicial em poucos dias</li>
-          <li>🔧 <strong>7 dias de ajustes finos</strong> incluídos</li>
+          <li>
+            🔧 <strong>7 dias de ajustes finos</strong> incluídos
+          </li>
           <li>📈 Foco em desempenho, SEO técnico e conversão</li>
         </ul>
 
