@@ -36,7 +36,10 @@ const schema = z.object({
 
   projeto: z.enum(PROJETOS, { message: "Escolha o tipo de projeto" }),
   orcamento: z.enum(ORCAMENTOS).optional(),
-  mensagem: z.string().min(10, { message: "Descreva brevemente o que você precisa" }).trim(),
+  mensagem: z
+    .string()
+    .min(10, { message: "Descreva brevemente o que você precisa" })
+    .trim(),
   website: z.string().optional(), // honeypot (deve ficar vazio)
 });
 
@@ -102,14 +105,30 @@ export default function ContatoPage() {
     }
   }
 
+  // classes reaproveitáveis (inputs e selects com o mesmo visual)
+  const baseField =
+    "w-full rounded-2xl bg-white/5 p-3 border outline-none focus:ring-2 focus:ring-[color:var(--brand-b)]";
+
+  // select: remove aparência nativa e habilita tema dark quando suportado
+  const selectField =
+    `${baseField} pr-10 appearance-none [-webkit-appearance:none] [color-scheme:dark]`;
+
   return (
     <section className="container-app section grid md:grid-cols-2 gap-10 items-start">
+      {/* CSS local para forçar options em dark quando o browser respeita */}
+      <style jsx global>{`
+        :root { color-scheme: dark; }
+        select option {
+          background: #0b1220;
+          color: #eaf0fb;
+        }
+        select option[disabled] {
+          color: rgba(234,240,251,.55);
+        }
+      `}</style>
+
       {/* FORM */}
-      <motion.div
-        className="card"
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
+      <motion.div className="card" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="h1">Vamos conversar</h1>
         <p className="muted mt-2">Respondo rápido. Me diga o que você precisa.</p>
 
@@ -129,14 +148,16 @@ export default function ContatoPage() {
               id="nome"
               {...register("nome")}
               placeholder="Seu nome"
-              className={`w-full rounded-2xl bg-white/5 p-3 border outline-none focus:ring-2 focus:ring-[color:var(--brand-b)] ${
-                errors.nome ? "border-red-400" : "border-white/10"
-              }`}
+              className={`${baseField} ${errors.nome ? "border-red-400" : "border-white/10"}`}
               aria-invalid={!!errors.nome}
               aria-describedby={errors.nome ? "err-nome" : undefined}
               autoComplete="name"
             />
-            {errors.nome && <p id="err-nome" className="text-red-400 text-sm mt-1">{errors.nome.message}</p>}
+            {errors.nome && (
+              <p id="err-nome" className="text-red-400 text-sm mt-1">
+                {errors.nome.message}
+              </p>
+            )}
           </div>
 
           <div>
@@ -146,14 +167,16 @@ export default function ContatoPage() {
               type="email"
               {...register("email")}
               placeholder="voce@empresa.com"
-              className={`w-full rounded-2xl bg-white/5 p-3 border outline-none focus:ring-2 focus:ring-[color:var(--brand-b)] ${
-                errors.email ? "border-red-400" : "border-white/10"
-              }`}
+              className={`${baseField} ${errors.email ? "border-red-400" : "border-white/10"}`}
               aria-invalid={!!errors.email}
               aria-describedby={errors.email ? "err-email" : undefined}
               autoComplete="email"
             />
-            {errors.email && <p id="err-email" className="text-red-400 text-sm mt-1">{errors.email.message}</p>}
+            {errors.email && (
+              <p id="err-email" className="text-red-400 text-sm mt-1">
+                {errors.email.message}
+              </p>
+            )}
           </div>
 
           <div>
@@ -162,49 +185,73 @@ export default function ContatoPage() {
               id="whatsapp"
               {...register("whatsapp")}
               placeholder="(82) 99999-9999"
-              onChange={(e) =>
-                setValue("whatsapp", maskPhone(e.target.value), { shouldValidate: true })
-              }
-              className="w-full rounded-2xl bg-white/5 p-3 border border-white/10 outline-none focus:ring-2 focus:ring-[color:var(--brand-b)]"
+              onChange={(e) => setValue("whatsapp", maskPhone(e.target.value), { shouldValidate: true })}
+              className={`${baseField} border-white/10`}
               inputMode="tel"
               autoComplete="tel"
             />
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
+            {/* SELECT PROJETO */}
             <div>
               <label className="block text-sm text-white/80 mb-1" htmlFor="projeto">Tipo de projeto*</label>
-              <select
-                id="projeto"
-                {...register("projeto")}
-                defaultValue=""
-                className={`w-full rounded-2xl bg-white/5 p-3 border outline-none focus:ring-2 focus:ring-[color:var(--brand-b)] ${
-                  errors.projeto ? "border-red-400" : "border-white/10"
-                }`}
-                aria-invalid={!!errors.projeto}
-                aria-describedby={errors.projeto ? "err-projeto" : undefined}
-              >
-                <option value="" disabled>Selecione</option>
-                {PROJETOS.map((p) => (
-                  <option key={p} value={p}>{LABEL_PROJETO[p]}</option>
-                ))}
-              </select>
-              {errors.projeto && <p id="err-projeto" className="text-red-400 text-sm mt-1">{errors.projeto.message}</p>}
+
+              <div className="relative">
+                <select
+                  id="projeto"
+                  {...register("projeto")}
+                  defaultValue=""
+                  className={`${selectField} ${errors.projeto ? "border-red-400" : "border-white/10"}`}
+                  aria-invalid={!!errors.projeto}
+                  aria-describedby={errors.projeto ? "err-projeto" : undefined}
+                >
+                  <option value="" disabled>Selecione</option>
+                  {PROJETOS.map((p) => (
+                    <option key={p} value={p}>
+                      {LABEL_PROJETO[p]}
+                    </option>
+                  ))}
+                </select>
+
+                {/* setinha custom (não clicável) */}
+                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white/60">
+                  ▼
+                </span>
+              </div>
+
+              {errors.projeto && (
+                <p id="err-projeto" className="text-red-400 text-sm mt-1">
+                  {errors.projeto.message}
+                </p>
+              )}
             </div>
 
+            {/* SELECT ORÇAMENTO */}
             <div>
-              <label className="block text-sm text-white/80 mb-1" htmlFor="orcamento">Faixa de orçamento (opcional)</label>
-              <select
-                id="orcamento"
-                {...register("orcamento")}
-                defaultValue=""
-                className="w-full rounded-2xl bg-white/5 p-3 border border-white/10 outline-none focus:ring-2 focus:ring-[color:var(--brand-b)]"
-              >
-                <option value="" disabled>Selecione</option>
-                {ORCAMENTOS.map((o) => (
-                  <option key={o} value={o}>{LABEL_ORCAMENTO[o]}</option>
-                ))}
-              </select>
+              <label className="block text-sm text-white/80 mb-1" htmlFor="orcamento">
+                Faixa de orçamento (opcional)
+              </label>
+
+              <div className="relative">
+                <select
+                  id="orcamento"
+                  {...register("orcamento")}
+                  defaultValue=""
+                  className={`${selectField} border-white/10`}
+                >
+                  <option value="" disabled>Selecione</option>
+                  {ORCAMENTOS.map((o) => (
+                    <option key={o} value={o}>
+                      {LABEL_ORCAMENTO[o]}
+                    </option>
+                  ))}
+                </select>
+
+                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white/60">
+                  ▼
+                </span>
+              </div>
             </div>
           </div>
 
@@ -214,21 +261,19 @@ export default function ContatoPage() {
               id="mensagem"
               {...register("mensagem")}
               placeholder="Descreva objetivo, prazo e referências"
-              className={`min-h-[140px] w-full rounded-2xl bg-white/5 p-3 border outline-none focus:ring-2 focus:ring-[color:var(--brand-b)] ${
-                errors.mensagem ? "border-red-400" : "border-white/10"
-              }`}
+              className={`min-h-[140px] ${baseField} ${errors.mensagem ? "border-red-400" : "border-white/10"}`}
               aria-invalid={!!errors.mensagem}
               aria-describedby={errors.mensagem ? "err-msg" : undefined}
             />
-            {errors.mensagem && <p id="err-msg" className="text-red-400 text-sm mt-1">{errors.mensagem.message}</p>}
+            {errors.mensagem && (
+              <p id="err-msg" className="text-red-400 text-sm mt-1">
+                {errors.mensagem.message}
+              </p>
+            )}
           </div>
 
           <div className="flex flex-wrap gap-3 pt-2">
-            <button
-              disabled={loading || isSubmitting}
-              className="btn btn-primary disabled:opacity-60"
-              type="submit"
-            >
+            <button disabled={loading || isSubmitting} className="btn btn-primary disabled:opacity-60" type="submit">
               {loading ? "Enviando..." : "Enviar"}
             </button>
 
@@ -268,11 +313,7 @@ export default function ContatoPage() {
       </motion.div>
 
       {/* LATERAL */}
-      <motion.aside
-        className="card"
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
+      <motion.aside className="card" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
         <h2 className="h2">Como funciona</h2>
         <ul className="mt-4 space-y-3 text-white/80">
           <li>⏱️ Tempo médio de resposta: <strong>em até 1h útil</strong></li>

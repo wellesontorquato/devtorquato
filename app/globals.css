@@ -280,3 +280,40 @@ html {
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* ===================== SELECT (dark) ===================== */
+/* Ajuda o browser a usar tema escuro nos controles nativos */
+:root { color-scheme: dark; }
+.dark { color-scheme: dark; }
+
+/* Base para selects (se você quiser usar a classe .select-dark) */
+.select-dark{
+  width: 100%;
+  border-radius: 1rem; /* 2xl */
+  padding: 0.75rem 2.5rem 0.75rem 0.75rem; /* pr-10 */
+  background: rgba(255,255,255,.05);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  outline: none;
+
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+
+  color-scheme: dark;
+}
+
+.select-dark:focus{
+  box-shadow: 0 0 0 2px var(--brand-b);
+}
+
+/* Quando o browser respeita, escurece o popup/lista */
+select option{
+  background: var(--bg-elev);
+  color: var(--fg);
+}
+
+/* “Selecione” */
+select option[disabled]{
+  color: color-mix(in srgb, var(--fg) 55%, transparent);
+}
